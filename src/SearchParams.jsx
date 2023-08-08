@@ -1,6 +1,7 @@
 // hook
 import { useState, useEffect } from "react";
-import Pet from "./Pet";
+import useBreedList from "./useBreedList";
+import Results from "./Results";
 const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
 
 // component made
@@ -14,16 +15,16 @@ const SearchParams = () => {
 
   const [breed, setBreed] = useState("");
 
-  const breeds = [];
+  const [breeds] = useBreedList(animal);
 
   // searches pet from the api
   // useEffect happens outside of component to the API
-  const [pets, setPets] = useState("");
+  const [pets, setPets] = useState([]);
 
   // request pets on submit events
   useEffect(() => {
     requestPets();
-  });
+  }, []);
 
   async function requestPets() {
     const res = await fetch(
@@ -36,7 +37,12 @@ const SearchParams = () => {
 
   return (
     <div className="search-params">
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          requestPets();
+        }}
+      >
         <label htmlFor="location">
           Location
           <input
@@ -88,14 +94,7 @@ const SearchParams = () => {
         <button>Submit</button>
       </form>
 
-      {pets.map((pet) => (
-        <Pet
-          name={pet.name}
-          animal={pet.animal}
-          breed={pet.breed}
-          key={pet.id} // swaps with whatever for id
-        />
-      ))}
+      <Results pets={pets} />
     </div>
   );
 };
