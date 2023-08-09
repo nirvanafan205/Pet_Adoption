@@ -1,99 +1,92 @@
 // hook
-import { useState, useEffect } from "react";
-import useBreedList from "./useBreedList";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Results from "./Results";
+import useBreedList from "./useBreedList";
+import fetchSearch from "./fetchSearch";
 const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
 
 // component made
 const SearchParams = () => {
-  // keeps track of location
-  // depeonds on how user changes in the form
-  // hooks have to be called in the same order
-  const [location, setLocation] = useState(""); // tihs is a hook, check if you see 'use'
+  const [requestParams, setRequestParams] = useState({
+    location: "",
+    animal: "",
+    breed: "",
+  });
 
+  /*
+    keeps track of location
+    depends on how user changes in the form
+    hooks have to be balled in the same order everytime
+  */
   const [animal, setAnimal] = useState("");
-
-  const [breed, setBreed] = useState("");
-
   const [breeds] = useBreedList(animal);
 
-  // searches pet from the api
-  // useEffect happens outside of component to the API
-  const [pets, setPets] = useState([]);
+  const results = useQuery(["search", requestParams], fetchSearch);
 
-  // request pets on submit events
-  useEffect(() => {
-    requestPets();
-  }, []);
-
-  async function requestPets() {
-    const res = await fetch(
-      `http://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
-    );
-    const json = await res.json();
-
-    setPets(json.pets);
-  }
+  // shows no pets are available
+  const pets = results?.data?.pets ?? [];
 
   return (
     <div className="search-params">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          requestPets();
+          const formData = new FormData(e.target);
+          const obj = {
+            animal: formData.get("animal") ?? "",
+            breed: formData.get("breed") ?? "",
+            location: formData.get("location") ?? "",
+          };
+          setRequestParams(obj);
         }}
       >
         <label htmlFor="location">
           Location
-          <input
-            // something change, it will update itself
-            onChange={(e) => setLocation(e.target.value)}
-            id="location"
-            value={location}
-            placeholder="Location"
-          />
+          <input id="location" name="location" placeholder="Location" />
         </label>
+
         <label htmlFor="animal">
           Animal
           <select
             id="animal"
-            value={animal}
+            name="animal"
             onChange={(e) => {
               setAnimal(e.target.value);
-              // clears out the breed when new animal is picked
-              setBreed("");
+            }}
+            onBlur={(e) => {
+              setAnimal(e.target.value);
             }}
           >
             <option />
             {ANIMALS.map((animal) => (
-              // an array of components
-              <option key={animal}>{animal}</option>
+              <option key={animal} value={animal}>
+                {animal}
+              </option>
             ))}
           </select>
         </label>
 
         <label htmlFor="breed">
-          breed
+          Breed
           <select
-            id="breed"
             // disables clickability if no breeds
-            disabled={breeds.length === 0}
-            value={breed}
-            onChange={(e) => {
-              setBreed(e.target.value);
-            }}
+            disabled={!breeds.length}
+            id="breed"
+            name="breed"
           >
             <option />
             {breeds.map((breed) => (
               // an array of components
-              <option key={breed}>{breed}</option>
+              <option key={breed} value={breed}>
+                {breed}
+              </option>
             ))}
           </select>
         </label>
 
         <button>Submit</button>
       </form>
-
       <Results pets={pets} />
     </div>
   );
