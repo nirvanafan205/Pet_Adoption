@@ -7,7 +7,7 @@ export default function useBreedList(animal) {
   // unloading, loading, loded
   const [status, setStatus] = useState("unloaded");
 
-  // re runs when anima changes
+  // re runs when animal changes
   useEffect(() => {
     if (!animal) {
       setBreedList([]);
