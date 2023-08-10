@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
+const modalRoot = document.getElementById("modal");
+
 const Modal = ({ children }) => {
   // piece of something, need that same thing everytime
   // different div everytime
@@ -13,7 +15,6 @@ const Modal = ({ children }) => {
   }
 
   useEffect(() => {
-    const modalRoot = document.getElementsByTagName("modal");
     modalRoot.appendChild(elRef.current);
 
     // whenever effect is returned, it will run that so it will unmount

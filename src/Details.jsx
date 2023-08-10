@@ -1,11 +1,14 @@
 import { useParams } from "react-router-dom";
-import Carousel from "./Carousel";
-import ErrorBoundary from "./ErrorBoundary";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import Modal from "./Modal";
+import ErrorBoundary from "./ErrorBoundary";
 import fetchPet from "./fetchPet";
+import Carousel from "./Carousel";
 
 const Details = () => {
   const { id } = useParams();
+  const [showModal, setShowModal] = useState(false);
 
   // query key provided to fetchpet.js
   const results = useQuery(["details", id], fetchPet);
@@ -21,6 +24,8 @@ const Details = () => {
   // pet is loaded/available
   const pet = results.data.pets[0];
 
+  // shows modal when clicked, it will be shown now
+  // hides it when user clicks No button
   return (
     <div className="details">
       <Carousel images={pet.images} />
@@ -28,15 +33,26 @@ const Details = () => {
         <h1>{pet.name}</h1>
         <h2>
           {pet.animal} - {pet.breed} - {pet.city}, {pet.state}
-          <button>Adopt {pet.name}</button>
-          <p>{pet.description}</p>
         </h2>
+        <button onClick={() => setShowModal(true)}>Adopt {pet.name}</button>
+        <p>{pet.description}</p>
+        {showModal ? (
+          <Modal>
+            <div>
+              <h1>Would you like to adopt {pet.name}?</h1>
+              <div className="buttons">
+                <button>Yes</button>
+                <button onClick={() => setShowModal(false)}>No</button>
+              </div>
+            </div>
+          </Modal>
+        ) : null}
       </div>
     </div>
   );
 };
 
-function DetailsErrorBoundary() {
+export default function DetailsErrorBoundary(props) {
   return (
     // goes directly through the error boundary
     <ErrorBoundary>
@@ -44,5 +60,3 @@ function DetailsErrorBoundary() {
     </ErrorBoundary>
   );
 }
-
-export default Details;
